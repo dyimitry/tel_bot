@@ -26,6 +26,5 @@ services:
       -  .env
 
 
-
 volumes:
   postgres-db:
