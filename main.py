@@ -19,9 +19,9 @@ import sqlite3
 # cursor = connection.cursor()
 
 
-# connection = psycopg2.connect(dbname=os.getenv("DB_NAME"), user=os.getenv("USER"),
-#                         password=os.getenv("PASSWORD"), host=os.getenv("HOST")) #(localhost)
-# cursor = connection.cursor()
+connection = psycopg2.connect(dbname=os.getenv("DB_NAME"), user=os.getenv("USER"),
+                        password=os.getenv("PASSWORD"), host=os.getenv("HOST")) #(localhost)
+cursor = connection.cursor()
 
 
 # def db_table_val(user_id: int, user_name: str, user_surname: str, username: str):
