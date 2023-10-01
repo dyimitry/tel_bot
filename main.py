@@ -5,32 +5,47 @@ import psycopg2
 import os
 import csv
 from pathlib import Path
+
 load_dotenv()
+from work_with_db import session, User
 
 token = os.getenv("TOKEN")
 bot = telebot.TeleBot(token)
 
 import sqlite3
 
+
 # connection = sqlite3.connect("database.db", check_same_thread=False)
 # cursor = connection.cursor()
 
 
-connection = psycopg2.connect(dbname=os.getenv("DB_NAME"), user=os.getenv("USER"),
-                        password=os.getenv("PASSWORD"), host=os.getenv("HOST")) #(localhost)
-cursor = connection.cursor()
+# connection = psycopg2.connect(dbname=os.getenv("DB_NAME"), user=os.getenv("USER"),
+#                         password=os.getenv("PASSWORD"), host=os.getenv("HOST")) #(localhost)
+# cursor = connection.cursor()
 
+
+# def db_table_val(user_id: int, user_name: str, user_surname: str, username: str):
+#     cursor.execute("CREATE TABLE IF NOT EXISTS users (user_id INT, user_name TEXT, user_surname TEXT, username TEXT)")
+#     cursor.execute("SELECT user_id FROM users WHERE user_id = %s", (user_id,))
+#     row = cursor.fetchone()
+#
+#     if not row:
+#         cursor.execute("INSERT INTO users (user_id, user_name, user_surname, username)  VALUES (%s, %s, %s, %s)",
+#                        (user_id, user_name, user_surname, username))
+#
+#     connection.commit()
 
 def db_table_val(user_id: int, user_name: str, user_surname: str, username: str):
-    cursor.execute("CREATE TABLE IF NOT EXISTS users (user_id INT, user_name TEXT, user_surname TEXT, username TEXT)")
-    cursor.execute("SELECT user_id FROM users WHERE user_id = %s", (user_id,))
-    row = cursor.fetchone()
-
-    if not row:
-        cursor.execute("INSERT INTO users (user_id, user_name, user_surname, username)  VALUES (%s, %s, %s, %s)",
-                       (user_id, user_name, user_surname, username))
-
-    connection.commit()
+    users = session.query(User.user_id).all()
+    if (user_id,) not in users:
+        user = User(
+            user_id=user_id,
+            user_name=user_name,
+            user_surname=user_surname,
+            username=username
+        )
+        session.add(user)
+        session.commit()
 
 
 @bot.message_handler(commands=['start'])  # создаем команду
@@ -47,7 +62,7 @@ def start(message):
 
     markup.add(button1)
 
-    if message.from_user.id == 282163762: # or message.from_user.id==6372488471:
+    if message.from_user.id == 282163762:  # or message.from_user.id==6372488471:
         button2 = types.InlineKeyboardButton(text='Показать всех users', callback_data='send_file')
         markup.add(button2)
 
@@ -58,22 +73,20 @@ def start(message):
 
 @bot.callback_query_handler(func=lambda call: call.data == "send_file")
 def button_pressed_handler(call):
-    cursor.execute("SELECT * FROM users")
-    lines = cursor.fetchall()
+    # cursor.execute("SELECT * FROM users")
+    # lines = cursor.fetchall()
+    lines = session.query(User).all()
 
     with open("users.csv", "w", encoding='utf-8') as f:
         file_writer = csv.writer(f, delimiter=",", lineterminator="\r")
         file_writer.writerow(["user_id", "first_name", "last_name", "username"])
         for line in lines:
-            file_writer.writerow(line)
+            file_writer.writerow([line.user_id, line.user_name, line.user_surname, line.username])
 
     dir_path = Path.cwd()
     path = Path(dir_path, "users.csv")
     doc = open(path, 'rb')
     bot.send_document(chat_id=call.message.chat.id, document=doc)
-
-
-# send_document
 
 
 bot.polling(none_stop=True)
