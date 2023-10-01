@@ -1,39 +1,17 @@
 import telebot
 from telebot import types
 from dotenv import load_dotenv
-import psycopg2
 import os
 import csv
 from pathlib import Path
+from work_with_db import session, User
 
 load_dotenv()
-from work_with_db import session, User
+
 
 token = os.getenv("TOKEN")
 bot = telebot.TeleBot(token)
 
-import sqlite3
-
-
-# connection = sqlite3.connect("database.db", check_same_thread=False)
-# cursor = connection.cursor()
-
-
-connection = psycopg2.connect(dbname=os.getenv("DB_NAME"), user=os.getenv("USER"),
-                        password=os.getenv("PASSWORD"), host=os.getenv("HOST")) #(localhost)
-cursor = connection.cursor()
-
-
-# def db_table_val(user_id: int, user_name: str, user_surname: str, username: str):
-#     cursor.execute("CREATE TABLE IF NOT EXISTS users (user_id INT, user_name TEXT, user_surname TEXT, username TEXT)")
-#     cursor.execute("SELECT user_id FROM users WHERE user_id = %s", (user_id,))
-#     row = cursor.fetchone()
-#
-#     if not row:
-#         cursor.execute("INSERT INTO users (user_id, user_name, user_surname, username)  VALUES (%s, %s, %s, %s)",
-#                        (user_id, user_name, user_surname, username))
-#
-#     connection.commit()
 
 def db_table_val(user_id: int, user_name: str, user_surname: str, username: str):
     users = session.query(User.user_id).all()
@@ -73,8 +51,6 @@ def start(message):
 
 @bot.callback_query_handler(func=lambda call: call.data == "send_file")
 def button_pressed_handler(call):
-    # cursor.execute("SELECT * FROM users")
-    # lines = cursor.fetchall()
     lines = session.query(User).all()
 
     with open("users.csv", "w", encoding='utf-8') as f:

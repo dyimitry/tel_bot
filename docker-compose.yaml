@@ -6,9 +6,9 @@ services:
   # описание контейнера db
   postgres-db:
     # образ, из которого должен быть запущен контейнер
-    image: postgres:13.0-alpine
-    ports:
-      - "5432:5432"
+    image: postgres:13
+#    ports:
+#      - "5432:5432"
     # volume и связанная с ним директория в контейнере
     env_file:
       - .env
@@ -17,8 +17,8 @@ services:
 
   bot:
     build: .
-    ports:
-      - "8000:8000"
+#    ports:
+#      - "8000:8000"
     depends_on:
       - postgres-db
     env_file:
