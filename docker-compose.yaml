@@ -10,21 +10,19 @@ services:
     ports:
       - "5432:5432"
     # volume и связанная с ним директория в контейнере
-    environment:
-      POSTGRES_PASSWORD: postgres
+    env_file:
+      - .env
     volumes:
-      - /var/lib/postgresql/data/
+      - postgres-db:/var/lib/postgresql/data/
 
   bot:
     build: .
-    restart: always
     ports:
       - "8000:8000"
     depends_on:
       - postgres-db
     env_file:
-      -  .env
-
+      - .env
 
 volumes:
   postgres-db:
